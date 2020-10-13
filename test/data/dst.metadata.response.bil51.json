@@ -1,0 +1,111 @@
+{
+  "active": true,
+  "contacts": [
+    {
+      "mail": "kam@dst.dk",
+      "name": "Karina Moric Ingemann",
+      "phone": "+4539173032"
+    }
+  ],
+  "description": "Nyregistrerede personbiler efter ejerforhold, drivmiddel og tid",
+  "documentation": {
+    "id": "6345462f-02d1-4b4d-b241-1123b4aa0379",
+    "url": "https://www.dst.dk/statistikdokumentation/6345462f-02d1-4b4d-b241-1123b4aa0379"
+  },
+  "footnote": null,
+  "id": "BIL51",
+  "suppressedDataValue": "0",
+  "text": "Nyregistrerede personbiler",
+  "unit": "antal",
+  "updated": "2020-10-08T08:00:00",
+  "variables": [
+    {
+      "elimination": true,
+      "id": "EJER",
+      "text": "ejerforhold",
+      "time": false,
+      "values": [
+        {
+          "id": "1005",
+          "text": "Husholdningerne"
+        },
+        {
+          "id": "1010",
+          "text": "Erhvervene"
+        }
+      ]
+    },
+    {
+      "elimination": false,
+      "id": "DRIV",
+      "text": "drivmiddel",
+      "time": false,
+      "values": [
+        {
+          "id": "20205",
+          "text": "Benzin"
+        },
+        {
+          "id": "20210",
+          "text": "Diesel"
+        },
+        {
+          "id": "20215",
+          "text": "F-gas"
+        },
+        {
+          "id": "20220",
+          "text": "N-gas"
+        },
+        {
+          "id": "20225",
+          "text": "El"
+        },
+        {
+          "id": "20230",
+          "text": "Petroleum"
+        },
+        {
+          "id": "20231",
+          "text": "Brint"
+        },
+        {
+          "id": "20233",
+          "text": "Benzinhybrid"
+        },
+        {
+          "id": "20234",
+          "text": "Dieselhybrid"
+        }
+      ]
+    },
+    {
+      "elimination": false,
+      "id": "Tid",
+      "text": "tid",
+      "time": true,
+      "values": [
+        {
+          "id": "2011M01",
+          "text": "2011M01"
+        },
+        {
+          "id": "2011M02",
+          "text": "2011M02"
+        },
+        {
+          "id": "2011M03",
+          "text": "2011M03"
+        },
+        {
+          "id": "2011M04",
+          "text": "2011M04"
+        },
+        {
+          "id": "2011M05",
+          "text": "2011M05"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,69 @@
+{
+  "dataset": {
+    "dimension": {
+      "ContentsCode": {
+        "category": {
+          "index": {
+            "BIL51": 0
+          },
+          "label": {
+            "BIL51": "Nyregistrerede personbiler"
+          },
+          "unit": {
+            "BIL51": {
+              "base": "antal",
+              "decimals": 0
+            }
+          }
+        },
+        "label": "Indhold"
+      },
+      "DRIV": {
+        "category": {
+          "index": {
+            "20205": 0
+          },
+          "label": {
+            "20205": "Benzin"
+          }
+        },
+        "label": "drivmiddel"
+      },
+      "Tid": {
+        "category": {
+          "index": {
+            "2020M09": 0
+          },
+          "label": {
+            "2020M09": "2020M09"
+          }
+        },
+        "label": "tid"
+      },
+      "id": [
+        "DRIV",
+        "ContentsCode",
+        "Tid"
+      ],
+      "role": {
+        "metric": [
+          "ContentsCode"
+        ],
+        "time": [
+          "Tid"
+        ]
+      },
+      "size": [
+        1,
+        1,
+        1
+      ]
+    },
+    "label": "Nyregistrerede personbiler efter drivmiddel, Indhold og tid",
+    "source": "Danmarks Statistik",
+    "updated": "2020-10-08T06:00:00Z",
+    "value": [
+      10400
+    ]
+  }
+}
