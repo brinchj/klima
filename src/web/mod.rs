@@ -4,9 +4,9 @@ use serde_json;
 
 use crate::dst::DataPoint;
 use crate::table::TimeSeries;
+use chrono::NaiveDate;
 use horrorshow::helper::doctype;
 use horrorshow::prelude::*;
-use chrono::NaiveDate;
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -14,7 +14,7 @@ struct ChartDataSet {
     label: String,
     background_color: String,
     border_color: String,
-    data: Vec<i64>,
+    data: Vec<Option<i64>>,
     fill: bool,
 }
 
@@ -88,6 +88,9 @@ pub struct ChartGraph {
 
 impl ChartGraph {
     pub fn bar_plot(name: String, series: Vec<TimeSeries>) -> ChartGraph {
+        let xs: im::OrdSet<NaiveDate> =
+            series.iter().flat_map(|f| f.data.keys()).cloned().collect();
+
         let colors = colorous::TURBO;
         let datasets = series
             .iter()
@@ -95,15 +98,15 @@ impl ChartGraph {
             .map(|(n, ts)| {
                 let color = colors.eval_rational(n, series.len());
                 ChartDataSet {
-                    label: ts.tags
-                            .iter()
-                            .map(|d| d.as_str())
-                            .collect::<Vec<_>>()
-                            .join(",")
-                    ,
+                    label: ts
+                        .tags
+                        .iter()
+                        .map(|d| d.as_str())
+                        .collect::<Vec<_>>()
+                        .join(","),
                     background_color: format!("#{:x}", color),
                     border_color: format!("#{:x}", color),
-                    data: ts.data.values().cloned().collect(),
+                    data: xs.iter().map(|x| ts.data.get(x).cloned()).collect(),
                     fill: false,
                 }
             })
@@ -143,7 +146,6 @@ impl ChartGraph {
             },
         };
 
-        let xs: im::OrdSet<NaiveDate> = series.iter().flat_map(|f| f.data.keys()).cloned().collect();
         let config = ChartConfig {
             Type: "bar".to_string(),
             data: ChartData {
@@ -183,7 +185,7 @@ impl ChartGraph {
                     ),
                     background_color: format!("#{:x}", color),
                     border_color: format!("#{:x}", color),
-                    data: d.iter().cloned().collect(),
+                    data: d.iter().cloned().map(Some).collect(),
                     fill: false,
                 }
             })
