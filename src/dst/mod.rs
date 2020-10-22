@@ -2,10 +2,12 @@ mod models;
 
 use im;
 use reqwest;
+use chrono::NaiveDate;
 
 use models::data::{DataRequest, DatasetContainer, Dimension, Dimensions, VariableRequest};
 use models::metadata::{Metadata, MetadataRequest, Value, Variable};
 use std::collections::BTreeMap;
+use crate::table::TimeSeries;
 
 pub struct VarKey(String);
 pub struct ValKey(String);
@@ -71,6 +73,16 @@ impl DataPoint {
             .into_iter()
             .collect()
     }
+
+    fn to_timeseries(time_id: &str, data: Vec<DataPoint>) -> Vec<TimeSeries> {
+        let tmp: im::OrdMap<im::OrdSet<String>, TimeSeries> = data.into_iter().fold(im::OrdMap::new(), |m, p| {
+            let time = NaiveDate::parse_from_str(&format!("{}D01", p.tags[time_id]), "%YM%mD%d").unwrap();
+            let tags: im::OrdSet<String> = p.tags.without(time_id).values().collect();
+            let new = TimeSeries::unit(tags.clone(), time, p.value);
+            m.update_with(tags, new, std::ops::Add::add)
+        });
+        tmp.into_iter().map(|(_, ts)| ts).collect()
+    }
 }
 
 fn variable<'a>(metadata: &'a Metadata, var: &VarKey) -> Option<&'a Variable> {
@@ -103,7 +115,22 @@ impl Table {
         })
     }
 
-    pub fn fetch_all(&self) -> Result<Vec<DataPoint>, failure::Error> {
+    pub fn fetch(
+        &self,
+        field_selector: BTreeMap<String, Vec<String>>,
+    ) -> Result<Vec<TimeSeries>, failure::Error> {
+        let id_selector: BTreeMap<String, Vec<&str>> = field_selector
+            .into_iter()
+            .map(|(k, v)| {
+                let metadata = self.metadata.variables.iter().find(|v| v.id == k).unwrap();
+                let ids: Vec<&str> = v
+                    .into_iter()
+                    .map(|text| metadata.values.iter().find(|v| v.text == text).unwrap().id.as_str())
+                    .collect();
+                (k, ids)
+            })
+            .collect();
+
         let request = DataRequest {
             table: self.table.as_str(),
             format: "JSONSTAT".to_string(),
@@ -113,7 +140,10 @@ impl Table {
                 .iter()
                 .map(|v| VariableRequest {
                     code: v.id.as_str(),
-                    values: vec!["*".to_string()],
+                    values: id_selector
+                        .get(&v.id)
+                        .cloned()
+                        .unwrap_or(vec!["*"]).to_owned(),
                 })
                 .collect(),
         };
@@ -132,10 +162,12 @@ impl Table {
             .map(|v| v.unwrap_or(0))
             .collect();
 
-        Ok(DataPoint::from_dimensions_and_data(
+        let time_id = self.metadata.variables.iter().find(|v| v.time).unwrap();
+
+        Ok(DataPoint::to_timeseries(&time_id.id, DataPoint::from_dimensions_and_data(
             &response.dataset.dimension,
             &values,
-        ))
+        )))
     }
 
     pub fn metadata(&self) -> &Metadata {

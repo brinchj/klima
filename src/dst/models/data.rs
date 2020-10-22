@@ -153,7 +153,7 @@ pub struct DatasetContainer {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct VariableRequest<'a> {
     pub code: &'a str,
-    pub values: Vec<String>,
+    pub values: Vec<&'a str>,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
