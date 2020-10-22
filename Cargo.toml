@@ -4,9 +4,15 @@ edition = "2018"
 name = "klima"
 version = "0.1.0"
 [dependencies]
+colorous = "*"
 failure = "*"
+horrorshow = "*"
 im = "*"
 serde_json = "*"
+
+[dependencies.reqwest]
+features = ["json", "blocking"]
+version = "*"
 
 [dependencies.serde]
 features = ["derive"]

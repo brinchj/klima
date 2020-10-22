@@ -45,6 +45,11 @@ pub struct Metadata {
     pub variables: Vec<Variable>,
 }
 
+#[derive(Debug, Deserialize, Serialize)]
+pub struct MetadataRequest<'a> {
+    pub table: &'a str,
+}
+
 #[cfg(test)]
 mod tests {
     use super::Metadata;

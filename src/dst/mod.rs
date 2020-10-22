@@ -1,9 +1,10 @@
 mod models;
 
 use im;
+use reqwest;
 
-use models::data::DatasetContainer;
-use models::metadata::{Metadata, Value, Variable};
+use models::data::{DataRequest, DatasetContainer, Dimension, Dimensions, VariableRequest};
+use models::metadata::{Metadata, MetadataRequest, Value, Variable};
 use std::collections::BTreeMap;
 
 pub struct VarKey(String);
@@ -11,8 +12,8 @@ pub struct ValKey(String);
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct DataPoint {
-    value: i64,
-    tags: im::OrdMap<String, String>
+    pub value: i64,
+    pub tags: im::OrdMap<String, String>,
 }
 
 impl DataPoint {
@@ -22,19 +23,51 @@ impl DataPoint {
         data: &[i64],
     ) -> im::Vector<DataPoint> {
         match dimensions.split_first() {
-            None => im::Vector::unit(DataPoint{tags, value: data[0]}),
-            Some(((name, variants), dimensions)) => {
-                variants.iter().map(|variant|
-                    tags.update(name.to_string(), variant.to_string())
-                ).fold(im::Vector::new(), |res, tags| {
-                    &res + &DataPoint::join_dimensions_and_data(dimensions, tags, &data[res.len()..])
-                })
-            }
+            None => im::Vector::unit(DataPoint {
+                tags,
+                value: data[0],
+            }),
+            Some(((name, variants), dimensions)) => variants
+                .iter()
+                .map(|variant| tags.update(name.to_string(), variant.to_string()))
+                .fold(im::Vector::new(), |res, tags| {
+                    &res + &DataPoint::join_dimensions_and_data(
+                        dimensions,
+                        tags,
+                        &data[res.len()..],
+                    )
+                }),
         }
     }
 
-    fn from_dimensions_and_data(dimensions: &[(&str, Vec<&str>)], data: &[i64]) -> Vec<DataPoint> {
-        return DataPoint::join_dimensions_and_data(dimensions, im::OrdMap::new(), data)
+    fn labels_sorted_by_index(dimension: &Dimension) -> Vec<&str> {
+        let swap = |(a, b)| (b, a);
+        let label = |id: &&String| dimension.category.label[id.as_str()].as_str();
+        dimension
+            .category
+            .index
+            .iter()
+            .map(swap)
+            .collect::<im::OrdMap<&u64, &String>>()
+            .values()
+            .map(label)
+            .collect()
+    }
+
+    fn from_dimensions_and_data(dimensions: &Dimensions, data: &[i64]) -> Vec<DataPoint> {
+        let d: Vec<(&str, Vec<&str>)> = dimensions
+            .id
+            .iter()
+            .filter(|id| !dimensions.role.metric.contains(&id))
+            .map(|id| {
+                (
+                    id.as_str(),
+                    Self::labels_sorted_by_index(&dimensions.dimension[id]),
+                )
+            })
+            .collect();
+
+        DataPoint::join_dimensions_and_data(&d, im::OrdMap::new(), data)
             .into_iter()
             .collect()
     }
@@ -48,9 +81,67 @@ fn variable_code<'a>(metadata: &'a Metadata, var: &VarKey, val: &ValKey) -> Opti
     variable(metadata, var).and_then(|v| v.values.iter().find(|v| v.text == val.0))
 }
 
+pub struct Table {
+    client: reqwest::blocking::Client,
+    table: String,
+    metadata: Metadata,
+}
 
+impl Table {
+    pub fn new(table: &str) -> Result<Table, failure::Error> {
+        let client = reqwest::blocking::Client::new();
+        let metadata = client
+            .post("https://api.statbank.dk/v1/tableinfo")
+            .json(&MetadataRequest { table })
+            .send()?
+            .json()?;
 
+        Ok(Table {
+            client,
+            metadata,
+            table: table.into(),
+        })
+    }
 
+    pub fn fetch_all(&self) -> Result<Vec<DataPoint>, failure::Error> {
+        let request = DataRequest {
+            table: self.table.as_str(),
+            format: "JSONSTAT".to_string(),
+            variables: self
+                .metadata
+                .variables
+                .iter()
+                .map(|v| VariableRequest {
+                    code: v.id.as_str(),
+                    values: vec!["*".to_string()],
+                })
+                .collect(),
+        };
+
+        let response: DatasetContainer = self
+            .client
+            .post("https://api.statbank.dk/v1/data")
+            .json(&request)
+            .send()?
+            .json()?;
+
+        let values: Vec<_> = response
+            .dataset
+            .value
+            .iter()
+            .map(|v| v.unwrap_or(0))
+            .collect();
+
+        Ok(DataPoint::from_dimensions_and_data(
+            &response.dataset.dimension,
+            &values,
+        ))
+    }
+
+    pub fn metadata(&self) -> &Metadata {
+        &self.metadata
+    }
+}
 
 #[cfg(test)]
 mod tests {
@@ -68,7 +159,7 @@ mod tests {
             ("Tid", vec!["2018", "2019", "2020"]),
         ];
 
-        let mut m: Vec<DataPoint> = vec![];
+        let mut expect: Vec<DataPoint> = vec![];
 
         let mut values = vec![];
         for driv in &dimensions[0].1 {
@@ -77,15 +168,15 @@ mod tests {
                     for tid in &dimensions[3].1 {
                         let n = values.len() as i64;
                         values.push(n);
-                        m.push(DataPoint {
+                        expect.push(DataPoint {
                             tags: vec![
                                 ("DRIV".to_string(), driv.to_string()),
                                 ("EJER".to_string(), ejer.to_string()),
                                 ("Data".to_string(), data.to_string()),
                                 ("Tid".to_string(), tid.to_string()),
                             ]
-                                .into_iter()
-                                .collect(),
+                            .into_iter()
+                            .collect(),
                             value: n,
                         });
                     }
@@ -93,9 +184,8 @@ mod tests {
             }
         }
 
-        assert_eq!(
-            DataPoint::from_dimensions_and_data(&dimensions, &values), m
-        );
+        let got = DataPoint::join_dimensions_and_data(&dimensions, im::OrdMap::new(), &values);
+        assert_eq!(got, expect.into());
     }
 
     #[test]

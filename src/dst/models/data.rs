@@ -4,8 +4,8 @@ use std::collections::BTreeMap;
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct Category {
-    index: BTreeMap<String, u64>,
-    label: BTreeMap<String, String>,
+    pub index: BTreeMap<String, u64>,
+    pub label: BTreeMap<String, String>,
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -23,8 +23,8 @@ pub struct CategoryWithUnit {
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct Dimension {
-    label: String,
-    category: Category,
+    pub label: String,
+    pub category: Category,
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -35,17 +35,17 @@ pub struct ContentsCode {
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct Role {
-    metric: Vec<String>,
-    time: Vec<String>,
+    pub metric: Vec<String>,
+    pub time: Vec<String>,
 }
 
 #[derive(Clone, Debug)]
 pub struct Dimensions {
-    dimension: BTreeMap<String, Dimension>,
-    contents_code: ContentsCode,
-    id: Vec<String>,
-    size: Vec<u64>,
-    role: Role,
+    pub dimension: BTreeMap<String, Dimension>,
+    pub contents_code: ContentsCode,
+    pub id: Vec<String>,
+    pub size: Vec<u64>,
+    pub role: Role,
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -112,16 +112,55 @@ impl Serialize for Dimensions {
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Dataset {
-    dimension: Dimensions,
-    label: String,
-    source: String,
-    updated: String,
-    value: Vec<i64>,
+    pub dimension: Dimensions,
+    pub label: String,
+    pub source: String,
+    pub updated: String,
+    pub value: Vec<Option<i64>>,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct DatasetContainer {
-    dataset: Dataset,
+    pub dataset: Dataset,
+}
+
+/**
+{
+   "table": "BIL51",
+   "format": "JSONSTAT",
+   "variables": [
+      {
+         "code": "EJER",
+         "values": [
+            "*"
+         ]
+      },
+      {
+         "code": "DRIV",
+         "values": [
+            "*"
+         ]
+      },
+      {
+         "code": "Tid",
+         "values": [
+            "*"
+         ]
+      }
+   ]
+}
+*/
+#[derive(Debug, Deserialize, Serialize)]
+pub struct VariableRequest<'a> {
+    pub code: &'a str,
+    pub values: Vec<String>,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct DataRequest<'a> {
+    pub table: &'a str,
+    pub format: String,
+    pub variables: Vec<VariableRequest<'a>>,
 }
 
 #[cfg(test)]
