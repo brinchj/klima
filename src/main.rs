@@ -32,8 +32,7 @@ fn main() {
         .max()
         .unwrap();
 
-    let last_sum: i64 = d.iter().map(|ts| ts.data.iter().last().unwrap().1)
-        .sum();
+    let last_sum: i64 = d.iter().map(|ts| ts.data.iter().last().unwrap().1).sum();
 
     let mut date = last_date;
     let goal_date = NaiveDate::from_ymd(2030, 1, 1);
@@ -41,13 +40,19 @@ fn main() {
 
     let mut goal_data = im::OrdMap::new();
     while date < goal_date {
-        date = date.with_month(date.month() + 1).or_else(|| date.with_month(1).and_then(|d| d.with_year(d.year() + 1))).unwrap();
+        date = date
+            .with_month(date.month() + 1)
+            .or_else(|| date.with_month(1).and_then(|d| d.with_year(d.year() + 1)))
+            .unwrap();
 
         let days_spent = all_days - (goal_date - date).num_days();
         let progress = ((1_000_000 - last_sum) * days_spent) / all_days;
         goal_data.insert(date, last_sum + progress);
     }
-    d.push(TimeSeries::new(im::OrdSet::unit("Mål,Total".to_string()), goal_data));
+    d.push(TimeSeries::new(
+        im::OrdSet::unit("Mål,Total".to_string()),
+        goal_data,
+    ));
 
     println!(
         "{}",

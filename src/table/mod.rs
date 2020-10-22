@@ -12,10 +12,7 @@ pub struct TimeSeries {
 
 impl TimeSeries {
     pub fn new(tags: im::OrdSet<String>, data: im::OrdMap<NaiveDate, i64>) -> TimeSeries {
-        TimeSeries {
-            tags,
-            data
-        }
+        TimeSeries { tags, data }
     }
 
     pub fn unit(tags: im::OrdSet<String>, date: NaiveDate, value: i64) -> TimeSeries {
