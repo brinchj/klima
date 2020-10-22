@@ -95,10 +95,12 @@ impl ChartGraph {
             .map(|(n, ts)| {
                 let color = colors.eval_rational(n, series.len());
                 ChartDataSet {
-                    label: format!(
-                        "{}",
-                        ts.tags.iter().map(|d| d.as_str()).collect::<Vec<_>>().join(",")
-                    ),
+                    label: ts.tags
+                            .iter()
+                            .map(|d| d.as_str())
+                            .collect::<Vec<_>>()
+                            .join(",")
+                    ,
                     background_color: format!("#{:x}", color),
                     border_color: format!("#{:x}", color),
                     data: ts.data.values().cloned().collect(),
