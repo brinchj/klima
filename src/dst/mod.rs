@@ -6,11 +6,8 @@ use reqwest;
 
 use crate::table::{TimeSeries, TimeSeriesGroup};
 use models::data::{DataRequest, DatasetContainer, Dimension, Dimensions, VariableRequest};
-use models::metadata::{Metadata, MetadataRequest, Value, Variable};
+use models::metadata::{Metadata, MetadataRequest};
 use std::collections::BTreeMap;
-
-pub struct VarKey(String);
-pub struct ValKey(String);
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct DataPoint {
@@ -86,14 +83,6 @@ impl DataPoint {
             });
         tmp.into_iter().map(|(_, ts)| ts).collect()
     }
-}
-
-fn variable<'a>(metadata: &'a Metadata, var: &VarKey) -> Option<&'a Variable> {
-    metadata.variables.iter().find(|v| v.id == var.0)
-}
-
-fn variable_code<'a>(metadata: &'a Metadata, var: &VarKey, val: &ValKey) -> Option<&'a Value> {
-    variable(metadata, var).and_then(|v| v.values.iter().find(|v| v.text == val.0))
 }
 
 pub struct Table {
@@ -180,10 +169,6 @@ impl Table {
             &time_id.id,
             DataPoint::from_dimensions_and_data(&response.dataset.dimension, &values),
         )))
-    }
-
-    pub fn metadata(&self) -> &Metadata {
-        &self.metadata
     }
 }
 

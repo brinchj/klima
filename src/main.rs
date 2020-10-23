@@ -1,10 +1,7 @@
 #[macro_use]
 extern crate horrorshow;
 
-use crate::table::TimeSeries;
-use chrono::{Datelike, NaiveDate};
-use serde::{Deserialize, Serialize};
-use serde_json;
+use chrono::NaiveDate;
 use std::collections::BTreeMap;
 
 mod dst;
@@ -19,7 +16,7 @@ fn main() {
 
     let t = dst::Table::new("BIL51").unwrap();
 
-    let mut d = t
+    let d = t
         .fetch(selector)
         .unwrap()
         .accumulative()

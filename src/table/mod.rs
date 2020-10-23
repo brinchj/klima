@@ -1,7 +1,6 @@
 use chrono;
 use chrono::{Datelike, NaiveDate};
 use im;
-use std::collections::BTreeSet;
 use std::ops::Add;
 
 pub struct TimeSeriesGroup {
@@ -88,8 +87,8 @@ impl TimeSeries {
 
     pub fn accumulative(self) -> Self {
         let init = (0i64, im::OrdMap::new());
-        let (sum, data) = self.data.into_iter().fold(init, |(sum, new), (t, y)| {
-            ((y + sum), new.update(t, y + sum))
+        let (_total, data) = self.data.into_iter().fold(init, |(running_total, out), (t, y)| {
+            ((y + running_total), out.update(t, y + running_total))
         });
         TimeSeries {
             tags: self.tags.clone(),

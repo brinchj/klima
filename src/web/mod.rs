@@ -1,10 +1,8 @@
 use colorous;
-use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use serde::{Deserialize, Serialize};
 use serde_json;
 
-use crate::dst::DataPoint;
-use crate::table::{TimeSeries, TimeSeriesGroup};
-use chrono::NaiveDate;
+use crate::table::TimeSeriesGroup;
 use horrorshow::helper::doctype;
 use horrorshow::prelude::*;
 
@@ -76,7 +74,7 @@ struct ChartOptions {
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 struct ChartConfig {
-    Type: String,
+    type_: String,
     data: ChartData,
     options: ChartOptions,
 }
@@ -147,7 +145,7 @@ impl ChartGraph {
         };
 
         let config = ChartConfig {
-            Type: "bar".to_string(),
+            type_: "bar".to_string(),
             data: ChartData {
                 labels: xs.iter().map(|s| s.format("%Y-%m").to_string()).collect(),
                 datasets,
