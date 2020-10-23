@@ -87,9 +87,12 @@ impl TimeSeries {
 
     pub fn accumulative(self) -> Self {
         let init = (0i64, im::OrdMap::new());
-        let (_total, data) = self.data.into_iter().fold(init, |(running_total, out), (t, y)| {
-            ((y + running_total), out.update(t, y + running_total))
-        });
+        let (_total, data) = self
+            .data
+            .into_iter()
+            .fold(init, |(running_total, out), (t, y)| {
+                ((y + running_total), out.update(t, y + running_total))
+            });
         TimeSeries {
             tags: self.tags.clone(),
             data,
