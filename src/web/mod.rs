@@ -3,7 +3,7 @@ use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use serde_json;
 
 use crate::dst::DataPoint;
-use crate::table::TimeSeries;
+use crate::table::{TimeSeries, TimeSeriesGroup};
 use chrono::NaiveDate;
 use horrorshow::helper::doctype;
 use horrorshow::prelude::*;
@@ -87,12 +87,12 @@ pub struct ChartGraph {
 }
 
 impl ChartGraph {
-    pub fn bar_plot(name: String, series: Vec<TimeSeries>) -> ChartGraph {
-        let xs: im::OrdSet<NaiveDate> =
-            series.iter().flat_map(|f| f.data.keys()).cloned().collect();
+    pub fn bar_plot(name: String, series: TimeSeriesGroup) -> ChartGraph {
+        let xs = series.xs();
 
         let colors = colorous::TURBO;
         let datasets = series
+            .series()
             .iter()
             .enumerate()
             .map(|(n, ts)| {
@@ -150,85 +150,6 @@ impl ChartGraph {
             Type: "bar".to_string(),
             data: ChartData {
                 labels: xs.iter().map(|s| s.format("%Y-%m").to_string()).collect(),
-                datasets,
-            },
-            options,
-        };
-
-        ChartGraph { name, config }
-    }
-
-    pub fn new(name: String, x_label_id: String, data: Vec<DataPoint>) -> ChartGraph {
-        let title = "test title".to_string();
-        let x_label = "test x label".to_string();
-        let y_label = "test y label".to_string();
-
-        let x_labels: im::OrdSet<&String> = data.iter().map(|d| &d.tags[&x_label_id]).collect();
-        let values: im::OrdMap<im::OrdSet<String>, im::Vector<i64>> =
-            data.iter().fold(im::OrdMap::new(), |m, v| {
-                m.alter(
-                    |old| Some(old.unwrap_or_default() + im::Vector::unit(v.value)),
-                    v.tags.without(&x_label_id).values().collect(),
-                )
-            });
-
-        let colors = colorous::TURBO;
-        let datasets = values
-            .iter()
-            .enumerate()
-            .map(|(n, (t, d))| {
-                let color = colors.eval_rational(n, values.len());
-                ChartDataSet {
-                    label: format!(
-                        "{}",
-                        t.iter().map(|d| d.as_str()).collect::<Vec<_>>().join(",")
-                    ),
-                    background_color: format!("#{:x}", color),
-                    border_color: format!("#{:x}", color),
-                    data: d.iter().cloned().map(Some).collect(),
-                    fill: false,
-                }
-            })
-            .collect();
-
-        let options = ChartOptions {
-            responsive: true,
-            title: ChartTitle {
-                display: true,
-                text: title,
-            },
-            tooltips: ChartToolTips {
-                mode: "index".to_string(),
-                intersect: false,
-            },
-            hover: ChartHover {
-                mode: "nearest".to_string(),
-                intersect: true,
-            },
-            scales: ChartScales {
-                x_axes: vec![ChartScale {
-                    stacked: true,
-                    display: true,
-                    scale_label: ChartScaleLabel {
-                        display: true,
-                        label_string: x_label,
-                    },
-                }],
-                y_axes: vec![ChartScale {
-                    stacked: true,
-                    display: true,
-                    scale_label: ChartScaleLabel {
-                        display: true,
-                        label_string: y_label,
-                    },
-                }],
-            },
-        };
-
-        let config = ChartConfig {
-            Type: "bar".to_string(),
-            data: ChartData {
-                labels: x_labels.iter().map(|s| s.to_string()).collect(),
                 datasets,
             },
             options,

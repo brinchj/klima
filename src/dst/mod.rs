@@ -4,7 +4,7 @@ use chrono::NaiveDate;
 use im;
 use reqwest;
 
-use crate::table::TimeSeries;
+use crate::table::{TimeSeries, TimeSeriesGroup};
 use models::data::{DataRequest, DatasetContainer, Dimension, Dimensions, VariableRequest};
 use models::metadata::{Metadata, MetadataRequest, Value, Variable};
 use std::collections::BTreeMap;
@@ -121,7 +121,7 @@ impl Table {
     pub fn fetch(
         &self,
         field_selector: BTreeMap<String, Vec<String>>,
-    ) -> Result<Vec<TimeSeries>, failure::Error> {
+    ) -> Result<TimeSeriesGroup, failure::Error> {
         let id_selector: BTreeMap<String, Vec<&str>> = field_selector
             .into_iter()
             .map(|(k, v)| {
@@ -176,10 +176,10 @@ impl Table {
 
         let time_id = self.metadata.variables.iter().find(|v| v.time).unwrap();
 
-        Ok(DataPoint::to_timeseries(
+        Ok(TimeSeriesGroup::new(DataPoint::to_timeseries(
             &time_id.id,
             DataPoint::from_dimensions_and_data(&response.dataset.dimension, &values),
-        ))
+        )))
     }
 
     pub fn metadata(&self) -> &Metadata {
