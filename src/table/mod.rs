@@ -38,11 +38,11 @@ impl TimeSeriesGroup {
         self.series.len()
     }
 
-    pub fn future_goal(self, date: NaiveDate, goal: i64) -> Self {
+    pub fn future_goal(self, date: NaiveDate, goal: i64, step: chrono::Duration) -> Self {
         let last_date = |ts: &TimeSeries| *ts.data.iter().last().unwrap().0;
         let final_date = self.series.iter().map(last_date).max().unwrap();
 
-        let datapoint = |ts: &TimeSeries| *ts.data.iter().last().unwrap().1;
+        let datapoint = |ts: &TimeSeries| *ts.data.get(&final_date).unwrap_or(&0);
         let final_sum: i64 = self.series.iter().map(datapoint).sum();
 
         let mut running_date = final_date;
@@ -50,7 +50,7 @@ impl TimeSeriesGroup {
 
         let mut goal_data = im::OrdMap::new();
         while running_date < date {
-            running_date = (running_date + chrono::Duration::days(31))
+            running_date = (running_date + step)
                 .with_day(1)
                 .unwrap();
 

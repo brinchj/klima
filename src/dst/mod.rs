@@ -71,12 +71,18 @@ impl DataPoint {
             .collect()
     }
 
+    fn parse_time(s: &str) -> NaiveDate {
+        if s.len() == 7 && s.contains("M") {
+            NaiveDate::parse_from_str(&format!("{}D01", s), "%YM%mD%d")
+        } else {
+            NaiveDate::parse_from_str(&format!("{}M01D01", s), "%YM%mD%d")
+        }.expect("failed to understand date format")
+    }
+
     fn to_timeseries(time_id: &str, data: Vec<DataPoint>) -> Vec<TimeSeries> {
         let tmp: im::OrdMap<im::OrdSet<String>, TimeSeries> =
             data.into_iter().fold(im::OrdMap::new(), |m, p| {
-                let time =
-                    NaiveDate::parse_from_str(&format!("{}D01", p.tags[time_id]), "%YM%mD%d")
-                        .unwrap();
+                let time = Self::parse_time(&p.tags[time_id]);
                 let tags: im::OrdSet<String> = p.tags.without(time_id).values().collect();
                 let new = TimeSeries::unit(tags.clone(), time, p.value);
                 m.update_with(tags, new, std::ops::Add::add)
@@ -122,7 +128,7 @@ impl Table {
                             .values
                             .iter()
                             .find(|v| v.text == text)
-                            .unwrap()
+                            .expect(&format!("no such variable value: {}", text))
                             .id
                             .as_str()
                     })
@@ -220,10 +226,12 @@ mod tests {
     fn test() {
         assert!(serde_json::from_str::<Metadata>(include_str!(
             "../../test/data/dst.metadata.response.bil51.json"
-        )).is_ok());
+        ))
+        .is_ok());
 
         assert!(serde_json::from_str::<DatasetContainer>(include_str!(
             "../../test/data/dst.data.response.bil51.large.json"
-        )).is_ok());
+        ))
+        .is_ok());
     }
 }

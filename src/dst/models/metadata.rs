@@ -29,13 +29,19 @@ pub struct Variable {
 }
 
 #[derive(Debug, Deserialize, Serialize)]
+pub struct Footnote {
+    pub text: String,
+    pub mandatory: bool,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Metadata {
     pub active: bool,
     pub contacts: Vec<Contact>,
     pub description: String,
     pub documentation: Documentation,
-    pub footnote: Option<String>,
+    pub footnote: Option<Footnote>,
     pub id: String,
     pub suppressed_data_value: String,
     pub text: String,
