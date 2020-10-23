@@ -52,7 +52,6 @@ pub struct MetadataRequest<'a> {
 #[cfg(test)]
 mod tests {
     use super::Metadata;
-    use serde::Serialize;
 
     #[test]
     fn parse() {

@@ -124,32 +124,6 @@ pub struct DatasetContainer {
     pub dataset: Dataset,
 }
 
-/**
-{
-   "table": "BIL51",
-   "format": "JSONSTAT",
-   "variables": [
-      {
-         "code": "EJER",
-         "values": [
-            "*"
-         ]
-      },
-      {
-         "code": "DRIV",
-         "values": [
-            "*"
-         ]
-      },
-      {
-         "code": "Tid",
-         "values": [
-            "*"
-         ]
-      }
-   ]
-}
-*/
 #[derive(Debug, Deserialize, Serialize)]
 pub struct VariableRequest<'a> {
     pub code: &'a str,
@@ -166,7 +140,6 @@ pub struct DataRequest<'a> {
 #[cfg(test)]
 mod tests {
     use super::DatasetContainer;
-    use serde::Serialize;
 
     #[test]
     fn parse() {

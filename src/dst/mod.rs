@@ -177,7 +177,6 @@ mod tests {
     use super::DataPoint;
     use super::DatasetContainer;
     use super::Metadata;
-    use std::collections::BTreeMap;
 
     #[test]
     fn test_from_dimensions_and_data() {
@@ -219,13 +218,12 @@ mod tests {
 
     #[test]
     fn test() {
-        let metadata: Metadata = serde_json::from_str(include_str!(
+        assert!(serde_json::from_str::<Metadata>(include_str!(
             "../../test/data/dst.metadata.response.bil51.json"
-        ))
-        .unwrap();
-        let data: DatasetContainer = serde_json::from_str(include_str!(
+        )).is_ok());
+
+        assert!(serde_json::from_str::<DatasetContainer>(include_str!(
             "../../test/data/dst.data.response.bil51.large.json"
-        ))
-        .unwrap();
+        )).is_ok());
     }
 }
