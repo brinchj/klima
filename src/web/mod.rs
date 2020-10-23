@@ -3,7 +3,6 @@ use serde::{Deserialize, Serialize};
 use serde_json;
 
 use crate::table::TimeSeriesGroup;
-use horrorshow::helper::doctype;
 use horrorshow::prelude::*;
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -155,35 +154,24 @@ impl ChartGraph {
 
         ChartGraph { name, config }
     }
-}
 
-pub fn test(graph: ChartGraph) -> String {
-    let json = serde_json::to_string_pretty(&graph.config).unwrap();
+    pub fn bar_plot_html(name: String, series: TimeSeriesGroup) -> impl horrorshow::RenderOnce {
+        let graph = Self::bar_plot(name.clone(), series);
 
-    let js = format!(
-        "
-var config = {};
-window.onload = function () {{
+        let json = serde_json::to_string_pretty(&graph.config).unwrap();
+
+        let js = format!("
+window.addEventListener(\"load\", function () {{
+  var config = {};
   var ctx = document.getElementById(\"{}\").getContext(\"2d\");
   window.myGraph{} = new Chart(ctx, config);
-}};
-",
-        json, graph.name, graph.name
-    );
+}});", json, graph.name, graph.name);
 
-    format!("{}", html! {
-      : doctype::HTML;
-      html {
-        head {
-            script(src = "https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.min.js") {}
-            script(src = "https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-annotation/0.5.7/chartjs-plugin-annotation.min.js") {}
-         }
-         body {
-            canvas(id=&graph.name) {}
+        html! {
+            canvas(id=name) {}
             script {
-              : Raw(&js)
+              : Raw(js)
             }
-         }
-      }
-    }).to_string()
+        }
+    }
 }
