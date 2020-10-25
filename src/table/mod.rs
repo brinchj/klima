@@ -1,3 +1,4 @@
+use crate::web;
 use chrono;
 use chrono::{Datelike, NaiveDate};
 use im;
@@ -50,9 +51,7 @@ impl TimeSeriesGroup {
 
         let mut goal_data = im::OrdMap::new();
         while running_date < date {
-            running_date = (running_date + step)
-                .with_day(1)
-                .unwrap();
+            running_date = (running_date + step).with_day(1).unwrap();
 
             let days_spent = (running_date - final_date).num_days();
             let progress = ((goal - final_sum) * days_spent) / all_days;
@@ -64,6 +63,10 @@ impl TimeSeriesGroup {
         series.push(TimeSeries::new(tags, goal_data));
 
         TimeSeriesGroup { series }
+    }
+
+    pub fn plot(self, id: &str) -> impl horrorshow::RenderOnce {
+        web::ChartGraph::bar_plot_html(id.into(), self)
     }
 }
 

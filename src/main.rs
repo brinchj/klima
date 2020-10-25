@@ -1,8 +1,8 @@
 #[macro_use]
 extern crate horrorshow;
 
-use horrorshow::Template;
 use horrorshow::helper::doctype;
+use horrorshow::Template;
 
 use crate::table::TimeSeriesGroup;
 use chrono::NaiveDate;
@@ -21,13 +21,16 @@ impl TableFetcher {
     pub fn new(table: &str) -> TableFetcher {
         TableFetcher {
             table: table.into(),
-            selector: Default::default()
+            selector: Default::default(),
         }
     }
 
     pub fn select(self, key: &str, values: &[&str]) -> Self {
         let mut s = self;
-        s.selector.entry(key.into()).or_default().extend(values.iter().map(|s| s.to_string()));
+        s.selector
+            .entry(key.into())
+            .or_default()
+            .extend(values.iter().map(|s| s.to_string()));
         s
     }
 
@@ -45,39 +48,28 @@ fn main() {
         .select("DRIV", &["El"])
         .fetch()
         .accumulative()
-        .future_goal(NaiveDate::from_yo(2030, 1), 1_000_000, month);
+        .future_goal(NaiveDate::from_yo(2030, 1), 1_000_000, month)
+        .plot("cars");
 
     let co2 = "Drivhusgasser i alt, ekskl. CO2 fra afbrænding af biomasse";
-    let bio = "Kuldioxid (CO2) fra afbrænding af biomasse";
-
     let overpost = "Emissioner fra dansk territorium (UNFCCC/UNECE-opgørelsen) (4=(1)÷(2)÷(3))";
-    let international_transport = "Emissioner i udlandet (international transport) (2)=(2.1)+(2.2)+(2.3)";
+    let international_transport =
+        "Emissioner i udlandet (international transport) (2)=(2.1)+(2.2)+(2.3)";
 
     let emissions = TableFetcher::new("MRO2")
         .select("OVERPOST", &[overpost])
         .select("EMTYPE8", &[co2])
         .fetch()
         .future_goal(NaiveDate::from_yo(2030, 1), 21_000, year)
-        .future_goal(NaiveDate::from_yo(2050, 1), 0, year);
+        .future_goal(NaiveDate::from_yo(2050, 1), 0, year)
+        .plot("emissions");
 
-    let i_transport = TableFetcher::new("MRO2")
+    let international_transport = TableFetcher::new("MRO2")
         .select("OVERPOST", &[international_transport])
         .select("EMTYPE8", &[co2])
         .fetch()
-        .future_goal(NaiveDate::from_yo(2050, 1), 20_000, year);
-
-    let bio = TableFetcher::new("MRO2")
-        .select("OVERPOST", &[overpost])
-        .select("EMTYPE8", &[bio])
-        .fetch();
-
-    let cars_html = web::ChartGraph::bar_plot_html("cars".into(), cars);
-
-    let emissions_html = web::ChartGraph::bar_plot_html("emissions".into(), emissions);
-
-    let transport_html = web::ChartGraph::bar_plot_html("transport".into(), i_transport);
-
-    let bio_html = web::ChartGraph::bar_plot_html("bio".into(), bio);
+        .future_goal(NaiveDate::from_yo(2050, 1), 20_000, year)
+        .plot("itransport");
 
     let html = html! {
           : doctype::HTML;
@@ -93,17 +85,17 @@ fn main() {
                 div(class="container") {
                   div(class="row") {
                     div(class="col col-lg-6 offset-lg-3") {
-                      : cars_html
+                      : cars
                     }
                   }
                   div(class="row") {
                     div(class="col col-lg-6 offset-lg-3") {
-                      : emissions_html
+                      : emissions
                     }
                   }
                   div(class="row") {
                     div(class="col col-lg-6 offset-lg-3") {
-                      : transport_html
+                      : international_transport
                     }
                   }
                 }

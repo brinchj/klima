@@ -160,12 +160,15 @@ impl ChartGraph {
 
         let json = serde_json::to_string_pretty(&graph.config).unwrap();
 
-        let js = format!("
+        let js = format!(
+            "
 window.addEventListener(\"load\", function () {{
   var config = {};
   var ctx = document.getElementById(\"{}\").getContext(\"2d\");
   window.myGraph{} = new Chart(ctx, config);
-}});", json, graph.name, graph.name);
+}});",
+            json, graph.name, graph.name
+        );
 
         html! {
             canvas(id=name) {}

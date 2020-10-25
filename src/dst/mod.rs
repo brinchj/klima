@@ -76,7 +76,8 @@ impl DataPoint {
             NaiveDate::parse_from_str(&format!("{}D01", s), "%YM%mD%d")
         } else {
             NaiveDate::parse_from_str(&format!("{}M01D01", s), "%YM%mD%d")
-        }.expect("failed to understand date format")
+        }
+        .expect("failed to understand date format")
     }
 
     fn to_timeseries(time_id: &str, data: Vec<DataPoint>) -> Vec<TimeSeries> {
