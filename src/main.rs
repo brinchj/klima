@@ -44,12 +44,30 @@ fn main() {
     let month = chrono::Duration::days(31);
     let year = chrono::Duration::days(366);
 
-    let cars = TableFetcher::new("BIL51")
+    let electric_cars = TableFetcher::new("BIL51")
         .select("DRIV", &["El"])
         .fetch()
         .accumulative()
-        .future_goal(NaiveDate::from_yo(2030, 1), 1_000_000, month)
-        .plot("cars");
+        .sum("Total antal nye elbiler")
+        .future_goal("Klimarådets 2030 minimum mål på 1 mio",NaiveDate::from_yo(2030, 1), 1_000_000, month)
+        .plot(
+            "electric_cars",
+            "Alle nye elbiler siden 2011",
+            "måned",
+            "samlet antal elbiler",
+        );
+
+    let oil_cars = TableFetcher::new("BIL51")
+        .select("DRIV", &["Benzin", "Diesel"])
+        .fetch()
+        .sum("Nye benzin og diesel biler")
+        .future_goal("Vej til 2030 stop for benzin og diesel",NaiveDate::from_yo(2030, 1), 0, month)
+        .plot(
+            "oil_cars",
+            "Nye Benzin og Diesel biler per måned",
+            "måned",
+            "nye biler per måned",
+        );
 
     let co2 = "Drivhusgasser i alt, ekskl. CO2 fra afbrænding af biomasse";
     let overpost = "Emissioner fra dansk territorium (UNFCCC/UNECE-opgørelsen) (4=(1)÷(2)÷(3))";
@@ -60,16 +78,28 @@ fn main() {
         .select("OVERPOST", &[overpost])
         .select("EMTYPE8", &[co2])
         .fetch()
-        .future_goal(NaiveDate::from_yo(2030, 1), 21_000, year)
-        .future_goal(NaiveDate::from_yo(2050, 1), 0, year)
-        .plot("emissions");
+        .sum("Udledninger")
+        .future_goal("Vej til 2030 mål", NaiveDate::from_yo(2030, 1), 21_000, year)
+        .future_goal("Vej til 2050 mål", NaiveDate::from_yo(2050, 1), 0, year)
+        .plot(
+            "emissions",
+            "Drivhusgasudledninger fra dansk territorium",
+            "år",
+            "COe ton",
+        );
 
     let international_transport = TableFetcher::new("MRO2")
         .select("OVERPOST", &[international_transport])
         .select("EMTYPE8", &[co2])
         .fetch()
-        .future_goal(NaiveDate::from_yo(2050, 1), 20_000, year)
-        .plot("itransport");
+        .sum("Udledninger fra dansk-drevet international transport")
+        .future_goal("EU mål om neutralitet i 2050",NaiveDate::from_yo(2050, 1), 0, year)
+        .plot(
+            "itransport",
+            "Drivhusgasudledninger fra dansk drevet international transport",
+            "år",
+            "COe ton",
+        );
 
     let html = html! {
           : doctype::HTML;
@@ -84,17 +114,47 @@ fn main() {
              body {
                 div(class="container") {
                   div(class="row") {
-                    div(class="col col-lg-6 offset-lg-3") {
-                      : cars
+                    div(class="col col-lg-12") {
+                      blockquote(class="blockquote lead") {
+                        p(class="mb-0") {
+                          : "Kampen om at få elbiler på de danske veje handler først og sidst om Danmarks klimamål. At nå klimalovens 70-procentsmål i 2030 kræver en omstilling af vores transportsektor. Jo færre kilometer der køres med benzin- og dieselbiler, jo bedre er chancen for, at vi når vores klimamål."
+                        }
+                        footer(class="blockquote-footer text-right") {
+                          a(href="https://klimaraadet.dk/da/nyheder/uden-elbiler-naar-vi-ikke-klimamaalet", target="_blank") {
+                            : "Klimarådet, oktober 2020"
+                          }
+                        }
+                      }
                     }
                   }
                   div(class="row") {
-                    div(class="col col-lg-6 offset-lg-3") {
+                    div(class="col col-lg-6") {
+                      : electric_cars
+                    }
+                    div(class="col col-lg-6") {
+                      : oil_cars
+                    }
+                  }
+                  hr {}
+                  div(class="row") {
+                    div(class="col col-lg-12") {
+                      blockquote(class="blockquote lead") {
+                        p(class="mb-0") {
+                          : "70-procentsmålet skal sikre, at Danmark bliver et foregangsland på klimaområdet. Men selvom målet er krævende, peger tidligere beregninger fra Klimarådet på, at 70 pct. i 2030 og klimaneutralitet senest i 2050 ikke er mere ambitiøst end nødvendigt. Målet svarer nemlig nogenlunde til, hvad der skal til, hvis Danmark skal kunne siges at levere sit bidrag til at begrænse den globale temperaturstigning til 1,5 grader."
+                        }
+                        footer(class="blockquote-footer text-right") {
+                          a(href="https://klimaraadet.dk/da/rapporter/kendte-veje-og-nye-spor-til-70-procents-reduktion", target="_blank") {
+                            : "Klimarådet, marts 2020"
+                          }
+                        }
+                      }
+                    }
+                  }
+                  div(class="row") {
+                    div(class="col col-lg-6") {
                       : emissions
                     }
-                  }
-                  div(class="row") {
-                    div(class="col col-lg-6 offset-lg-3") {
+                    div(class="col col-lg-6") {
                       : international_transport
                     }
                   }

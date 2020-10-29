@@ -35,11 +35,21 @@ impl TimeSeriesGroup {
         }
     }
 
+    pub fn sum(self, title: &str) -> Self {
+        TimeSeriesGroup {
+            series: vec![self
+                .series
+                .into_iter()
+                .fold(TimeSeries::default(), std::ops::Add::add)
+                .with_tags(im::OrdSet::unit(title.to_string()))],
+        }
+    }
+
     pub fn len(&self) -> usize {
         self.series.len()
     }
 
-    pub fn future_goal(self, date: NaiveDate, goal: i64, step: chrono::Duration) -> Self {
+    pub fn future_goal(self, title: &str, date: NaiveDate, goal: i64, step: chrono::Duration) -> Self {
         let last_date = |ts: &TimeSeries| *ts.data.iter().last().unwrap().0;
         let final_date = self.series.iter().map(last_date).max().unwrap();
 
@@ -58,15 +68,15 @@ impl TimeSeriesGroup {
             goal_data.insert(running_date, final_sum + progress);
         }
 
-        let tags = im::OrdSet::unit("Mål, Total".to_string());
+        let tags = im::OrdSet::unit(title.to_string());
         let mut series = self.series;
         series.push(TimeSeries::new(tags, goal_data));
 
         TimeSeriesGroup { series }
     }
 
-    pub fn plot(self, id: &str) -> impl horrorshow::RenderOnce {
-        web::ChartGraph::bar_plot_html(id.into(), self)
+    pub fn plot(self, id: &str, title: &str, x: &str, y: &str) -> impl horrorshow::RenderOnce {
+        web::ChartGraph::bar_plot_html(id.into(), title.into(), x.into(), y.into(), self)
     }
 }
 
@@ -85,6 +95,13 @@ impl TimeSeries {
         TimeSeries {
             tags,
             data: im::OrdMap::unit(date, value),
+        }
+    }
+
+    pub fn with_tags(self, tags: im::OrdSet<String>) -> Self {
+        TimeSeries {
+            tags,
+            data: self.data,
         }
     }
 
@@ -109,7 +126,7 @@ impl Add for TimeSeries {
     fn add(self, rhs: Self) -> Self::Output {
         TimeSeries {
             tags: self.tags.union(rhs.tags),
-            data: self.data.union(rhs.data),
+            data: self.data.union_with(rhs.data, std::ops::Add::add),
         }
     }
 }

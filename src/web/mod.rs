@@ -12,7 +12,10 @@ struct ChartDataSet {
     background_color: String,
     border_color: String,
     data: Vec<Option<i64>>,
-    fill: bool,
+    fill: String,
+    border_width: u64,
+    point_radius: u64,
+    point_hover_radius: u64,
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -84,7 +87,13 @@ pub struct ChartGraph {
 }
 
 impl ChartGraph {
-    pub fn bar_plot(name: String, series: TimeSeriesGroup) -> ChartGraph {
+    pub fn bar_plot(
+        id: String,
+        title: String,
+        x: String,
+        y: String,
+        series: TimeSeriesGroup,
+    ) -> ChartGraph {
         let xs = series.xs();
 
         let colors = colorous::TURBO;
@@ -104,7 +113,10 @@ impl ChartGraph {
                     background_color: format!("#{:x}", color),
                     border_color: format!("#{:x}", color),
                     data: xs.iter().map(|x| ts.data.get(x).cloned()).collect(),
-                    fill: false,
+                    fill: "start".to_string(),
+                    border_width: 1,
+                    point_radius: 0,
+                    point_hover_radius: 1,
                 }
             })
             .collect();
@@ -112,8 +124,8 @@ impl ChartGraph {
         let options = ChartOptions {
             responsive: true,
             title: ChartTitle {
-                display: true,
-                text: "title".into(),
+                display: false,
+                text: title,
             },
             tooltips: ChartToolTips {
                 mode: "index".to_string(),
@@ -128,8 +140,8 @@ impl ChartGraph {
                     stacked: true,
                     display: true,
                     scale_label: ChartScaleLabel {
-                        display: true,
-                        label_string: "x label".into(),
+                        display: false,
+                        label_string: x,
                     },
                 }],
                 y_axes: vec![ChartScale {
@@ -137,14 +149,14 @@ impl ChartGraph {
                     display: true,
                     scale_label: ChartScaleLabel {
                         display: true,
-                        label_string: "y label".into(),
+                        label_string: y,
                     },
                 }],
             },
         };
 
         let config = ChartConfig {
-            type_: "bar".to_string(),
+            type_: "line".to_string(),
             data: ChartData {
                 labels: xs.iter().map(|s| s.format("%Y-%m").to_string()).collect(),
                 datasets,
@@ -152,12 +164,17 @@ impl ChartGraph {
             options,
         };
 
-        ChartGraph { name, config }
+        ChartGraph { name: id, config }
     }
 
-    pub fn bar_plot_html(name: String, series: TimeSeriesGroup) -> impl horrorshow::RenderOnce {
-        let graph = Self::bar_plot(name.clone(), series);
-
+    pub fn bar_plot_html(
+        id: String,
+        title: String,
+        x: String,
+        y: String,
+        series: TimeSeriesGroup,
+    ) -> impl horrorshow::RenderOnce {
+        let graph = Self::bar_plot(id.clone(), title, x, y, series);
         let json = serde_json::to_string_pretty(&graph.config).unwrap();
 
         let js = format!(
@@ -171,7 +188,7 @@ window.addEventListener(\"load\", function () {{
         );
 
         html! {
-            canvas(id=name) {}
+            canvas(id=id) {}
             script {
               : Raw(js)
             }
