@@ -48,19 +48,19 @@ fn main() {
         .select("DRIV", &["El"])
         .fetch()
         .accumulative()
-        .sum("Total antal nye elbiler")
-        .future_goal("Klimarådets 2030 minimum mål på 1 mio",NaiveDate::from_yo(2030, 1), 1_000_000, month)
+        .sum("Ny-registrerede elbiler i alt")
+        .future_goal("Vej til Klimarådets 2030 mål på 1+ million elbiler",NaiveDate::from_yo(2030, 1), 1_000_000, month)
         .plot(
             "electric_cars",
             "Alle nye elbiler siden 2011",
             "måned",
-            "samlet antal elbiler",
+            "samlet antal indregistrerede elbiler",
         );
 
     let oil_cars = TableFetcher::new("BIL51")
         .select("DRIV", &["Benzin", "Diesel"])
         .fetch()
-        .sum("Nye benzin og diesel biler")
+        .sum("Ny-registrerede benzin og diesel biler per måned")
         .future_goal("Vej til 2030 stop for benzin og diesel",NaiveDate::from_yo(2030, 1), 0, month)
         .plot(
             "oil_cars",
@@ -71,32 +71,17 @@ fn main() {
 
     let co2 = "Drivhusgasser i alt, ekskl. CO2 fra afbrænding af biomasse";
     let overpost = "Emissioner fra dansk territorium (UNFCCC/UNECE-opgørelsen) (4=(1)÷(2)÷(3))";
-    let international_transport =
-        "Emissioner i udlandet (international transport) (2)=(2.1)+(2.2)+(2.3)";
 
     let emissions = TableFetcher::new("MRO2")
         .select("OVERPOST", &[overpost])
         .select("EMTYPE8", &[co2])
         .fetch()
-        .sum("Udledninger")
+        .sum("Udledninger fra dansk territorium (UNFCCC/UNECE), i alt, ekskl. CO2 fra afbrænding af biomasse")
         .future_goal("Vej til 2030 mål", NaiveDate::from_yo(2030, 1), 21_000, year)
         .future_goal("Vej til 2050 mål", NaiveDate::from_yo(2050, 1), 0, year)
         .plot(
             "emissions",
             "Drivhusgasudledninger fra dansk territorium",
-            "år",
-            "COe ton",
-        );
-
-    let international_transport = TableFetcher::new("MRO2")
-        .select("OVERPOST", &[international_transport])
-        .select("EMTYPE8", &[co2])
-        .fetch()
-        .sum("Udledninger fra dansk-drevet international transport")
-        .future_goal("EU mål om neutralitet i 2050",NaiveDate::from_yo(2050, 1), 0, year)
-        .plot(
-            "itransport",
-            "Drivhusgasudledninger fra dansk drevet international transport",
             "år",
             "COe ton",
         );
@@ -128,10 +113,12 @@ fn main() {
                     }
                   }
                   div(class="row") {
-                    div(class="col col-lg-6") {
+                    div(class="col col-lg-12") {
                       : electric_cars
                     }
-                    div(class="col col-lg-6") {
+                  }
+                  div(class="row") {
+                    div(class="col col-lg-12") {
                       : oil_cars
                     }
                   }
@@ -151,11 +138,8 @@ fn main() {
                     }
                   }
                   div(class="row") {
-                    div(class="col col-lg-6") {
+                    div(class="col col-lg-12") {
                       : emissions
-                    }
-                    div(class="col col-lg-6") {
-                      : international_transport
                     }
                   }
                 }
