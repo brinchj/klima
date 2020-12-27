@@ -172,10 +172,13 @@ impl Table {
 
         let time_id = self.metadata.variables.iter().find(|v| v.time).unwrap();
 
-        Ok(TimeSeriesGroup::new(self.metadata.updated, DataPoint::to_timeseries(
-            &time_id.id,
-            DataPoint::from_dimensions_and_data(&response.dataset.dimension, &values),
-        )))
+        Ok(TimeSeriesGroup::new(
+            self.metadata.updated,
+            DataPoint::to_timeseries(
+                &time_id.id,
+                DataPoint::from_dimensions_and_data(&response.dataset.dimension, &values),
+            ),
+        ))
     }
 }
 

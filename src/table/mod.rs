@@ -1,6 +1,6 @@
 use crate::web;
 use chrono;
-use chrono::{Datelike, NaiveDate, DateTime, Utc};
+use chrono::{DateTime, Datelike, NaiveDate, Utc};
 use im;
 use std::ops::Add;
 
@@ -81,7 +81,10 @@ impl TimeSeriesGroup {
         let mut series = self.series;
         series.push(TimeSeries::new(tags, goal_data));
 
-        TimeSeriesGroup { updated: self.updated, series }
+        TimeSeriesGroup {
+            updated: self.updated,
+            series,
+        }
     }
 
     pub fn plot(self, id: &str, title: &str, x: &str, y: &str) -> impl horrorshow::RenderOnce {
