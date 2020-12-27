@@ -1,5 +1,26 @@
 use serde::{Deserialize, Serialize};
 
+mod dst_date_format {
+    use chrono::{DateTime, TimeZone, Utc};
+    use serde::{self, Deserialize, Deserializer, Serializer};
+
+    const FORMAT: &'static str = "%Y-%m-%dT%H:%M:%S";
+
+    pub fn serialize<S: Serializer>(
+        date: &DateTime<Utc>,
+        serializer: S,
+    ) -> Result<S::Ok, S::Error> {
+        serializer.serialize_str(&format!("{}", date.format(FORMAT)))
+    }
+
+    pub fn deserialize<'de, D: Deserializer<'de>>(
+        deserializer: D,
+    ) -> Result<DateTime<Utc>, D::Error> {
+        Utc.datetime_from_str(&String::deserialize(deserializer)?, FORMAT)
+            .map_err(serde::de::Error::custom)
+    }
+}
+
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Contact {
     pub mail: String,
@@ -46,7 +67,8 @@ pub struct Metadata {
     pub suppressed_data_value: String,
     pub text: String,
     pub unit: String,
-    pub updated: String,
+    #[serde(with = "dst_date_format")]
+    pub updated: chrono::DateTime<chrono::Utc>,
     pub variables: Vec<Variable>,
 }
 

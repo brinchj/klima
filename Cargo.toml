@@ -3,8 +3,8 @@ authors = ["Johan Brinch <johan@pleo.io>"]
 edition = "2018"
 name = "klima"
 version = "0.1.0"
+
 [dependencies]
-chrono = "*"
 colorous = "*"
 failure = "*"
 horrorshow = "*"
@@ -18,3 +18,7 @@ version = "*"
 [dependencies.serde]
 features = ["derive"]
 version = "1.0"
+
+[dependencies.chrono]
+version = "*"
+features = ["serde"]
