@@ -14,6 +14,10 @@ impl TimeSeriesGroup {
         TimeSeriesGroup { updated, series }
     }
 
+    pub fn updated(&self) -> &DateTime<Utc> {
+        &self.updated
+    }
+
     pub fn series(&self) -> &[TimeSeries] {
         &self.series
     }
@@ -85,7 +89,8 @@ impl TimeSeriesGroup {
     }
 
     pub fn plot(self, id: &str, title: &str, x: &str, y: &str) -> impl horrorshow::RenderOnce {
-        web::ChartGraph::bar_plot_html(id.into(), title.into(), x.into(), y.into(), self)
+        let y = format!("{} — {}", y, self.updated.date().naive_local().to_string());
+        web::ChartGraph::bar_plot_html(id.into(), title.into(), x.into(), y, self)
     }
 }
 
