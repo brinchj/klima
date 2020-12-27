@@ -1,16 +1,17 @@
 use crate::web;
 use chrono;
-use chrono::{Datelike, NaiveDate};
+use chrono::{Datelike, NaiveDate, DateTime, Utc};
 use im;
 use std::ops::Add;
 
 pub struct TimeSeriesGroup {
+    updated: DateTime<Utc>,
     series: Vec<TimeSeries>,
 }
 
 impl TimeSeriesGroup {
-    pub fn new(series: Vec<TimeSeries>) -> Self {
-        TimeSeriesGroup { series }
+    pub fn new(updated: DateTime<Utc>, series: Vec<TimeSeries>) -> Self {
+        TimeSeriesGroup { updated, series }
     }
 
     pub fn series(&self) -> &[TimeSeries] {
@@ -27,6 +28,7 @@ impl TimeSeriesGroup {
 
     pub fn accumulative(self) -> Self {
         TimeSeriesGroup {
+            updated: self.updated,
             series: self
                 .series
                 .into_iter()
@@ -37,6 +39,7 @@ impl TimeSeriesGroup {
 
     pub fn sum(self, title: &str) -> Self {
         TimeSeriesGroup {
+            updated: self.updated,
             series: vec![self
                 .series
                 .into_iter()
@@ -78,7 +81,7 @@ impl TimeSeriesGroup {
         let mut series = self.series;
         series.push(TimeSeries::new(tags, goal_data));
 
-        TimeSeriesGroup { series }
+        TimeSeriesGroup { updated: self.updated, series }
     }
 
     pub fn plot(self, id: &str, title: &str, x: &str, y: &str) -> impl horrorshow::RenderOnce {
