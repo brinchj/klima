@@ -13,14 +13,14 @@ mod table;
 mod web;
 
 struct TableFetcher {
-    table: String,
+    table: dst::Table,
     selector: BTreeMap<String, Vec<String>>,
 }
 
 impl TableFetcher {
     pub fn new(table: &str) -> TableFetcher {
         TableFetcher {
-            table: table.into(),
+            table: dst::Table::new(table).unwrap(),
             selector: Default::default(),
         }
     }
@@ -35,8 +35,7 @@ impl TableFetcher {
     }
 
     pub fn fetch(self) -> TimeSeriesGroup {
-        let t = dst::Table::new(&self.table).unwrap();
-        t.fetch(self.selector).unwrap()
+        self.table.fetch(self.selector).unwrap()
     }
 }
 
