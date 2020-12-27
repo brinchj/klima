@@ -14,10 +14,6 @@ impl TimeSeriesGroup {
         TimeSeriesGroup { updated, series }
     }
 
-    pub fn updated(&self) -> &DateTime<Utc> {
-        &self.updated
-    }
-
     pub fn series(&self) -> &[TimeSeries] {
         &self.series
     }

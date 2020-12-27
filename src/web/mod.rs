@@ -4,7 +4,6 @@ use serde_json;
 
 use crate::table::TimeSeriesGroup;
 use horrorshow::prelude::*;
-use chrono::{DateTime, Utc};
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -175,8 +174,6 @@ impl ChartGraph {
         y: String,
         series: TimeSeriesGroup,
     ) -> impl horrorshow::RenderOnce {
-        let updated = series.updated().to_rfc2822();
-
         let graph = Self::bar_plot(id.clone(), title, x, y, series);
         let json = serde_json::to_string_pretty(&graph.config).unwrap();
 
