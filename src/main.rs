@@ -48,7 +48,12 @@ fn main() {
         .fetch()
         .accumulative()
         .sum("Ny-registrerede elbiler i alt")
-        .future_goal("Vej til Klimarådets 2030 mål på 1+ million elbiler",NaiveDate::from_yo(2030, 1), 1_000_000, month)
+        .future_goal(
+            "Vej til Klimarådets 2030 mål på 1+ million elbiler",
+            NaiveDate::from_yo(2030, 1),
+            1_000_000,
+            month,
+        )
         .plot(
             "electric_cars",
             "Alle nye elbiler siden 2011",
@@ -60,7 +65,12 @@ fn main() {
         .select("DRIV", &["Benzin", "Diesel"])
         .fetch()
         .sum("Ny-registrerede benzin og diesel biler per måned")
-        .future_goal("Vej til 2030 stop for benzin og diesel",NaiveDate::from_yo(2030, 1), 0, month)
+        .future_goal(
+            "Vej til 2030 stop for benzin og diesel",
+            NaiveDate::from_yo(2030, 1),
+            0,
+            month,
+        )
         .plot(
             "oil_cars",
             "Nye Benzin og Diesel biler per måned",

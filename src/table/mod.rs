@@ -49,7 +49,13 @@ impl TimeSeriesGroup {
         self.series.len()
     }
 
-    pub fn future_goal(self, title: &str, date: NaiveDate, goal: i64, step: chrono::Duration) -> Self {
+    pub fn future_goal(
+        self,
+        title: &str,
+        date: NaiveDate,
+        goal: i64,
+        step: chrono::Duration,
+    ) -> Self {
         let last_date = |ts: &TimeSeries| *ts.data.iter().last().unwrap().0;
         let final_date = self.series.iter().map(last_date).max().unwrap();
 
