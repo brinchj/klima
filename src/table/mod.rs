@@ -26,6 +26,13 @@ impl TimeSeriesGroup {
             .collect()
     }
 
+    pub fn map(self, f: fn(i64) -> i64) -> Self {
+        TimeSeriesGroup {
+            updated: self.updated,
+            series: self.series.into_iter().map(|ts| ts.map(f)).collect()
+        }
+    }
+
     pub fn accumulative(self) -> Self {
         TimeSeriesGroup {
             updated: self.updated,
@@ -129,6 +136,13 @@ impl TimeSeries {
         TimeSeries {
             tags: self.tags.clone(),
             data,
+        }
+    }
+
+    pub fn map(self, f: fn(i64) -> i64) -> Self {
+        TimeSeries {
+            tags: self.tags,
+            data: self.data.into_iter().map(|(k, v)| (k, f(v))).collect()
         }
     }
 }

@@ -86,7 +86,8 @@ fn main() {
         .select("EMTYPE8", &[co2])
         .fetch()
         .sum("Udledninger fra dansk territorium (UNFCCC/UNECE), i alt, ekskl. CO2 fra afbrænding af biomasse")
-        .future_goal("Vej til 2030 mål", NaiveDate::from_yo(2030, 1), 21_000, year)
+        .map(|v| v * 1_000)
+        .future_goal("Vej til 2030 mål", NaiveDate::from_yo(2030, 1), 21_000_000, year)
         .future_goal("Vej til 2050 mål", NaiveDate::from_yo(2050, 1), 0, year)
         .plot(
             "emissions",
