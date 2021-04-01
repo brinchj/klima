@@ -168,18 +168,15 @@ impl TimeSeries {
     pub fn accumulative(self, final_date: NaiveDate) -> Self {
         let init = (0i64, im::OrdMap::new());
 
-        let (total, data) = self
+        let (total, mut data) = self
             .data
             .into_iter()
             .fold(init, |(running_total, out), (t, y)| {
                 ((y + running_total), out.update(t, y + running_total))
             });
 
-        let data: im::OrdMap<NaiveDate, i64> = data;
-        println!("HERE {:?}", final_date);
-
         if !data.contains_key(&final_date) {
-            data[final_date] = total;
+            data.insert(final_date, total);
         }
 
         TimeSeries {
