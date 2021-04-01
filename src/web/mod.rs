@@ -113,7 +113,7 @@ impl ChartGraph {
                     background_color: format!("#{:x}", color),
                     border_color: format!("#{:x}", color),
                     data: xs.iter().map(|x| ts.data.get(x).cloned()).collect(),
-                    fill: "start".to_string(),
+                    fill: "none".to_string(),
                     border_width: 1,
                     point_radius: 0,
                     point_hover_radius: 1,
@@ -137,7 +137,7 @@ impl ChartGraph {
             },
             scales: ChartScales {
                 x_axes: vec![ChartScale {
-                    stacked: true,
+                    stacked: false,
                     display: true,
                     scale_label: ChartScaleLabel {
                         display: false,
@@ -145,7 +145,7 @@ impl ChartGraph {
                     },
                 }],
                 y_axes: vec![ChartScale {
-                    stacked: true,
+                    stacked: false,
                     display: true,
                     scale_label: ChartScaleLabel {
                         display: true,
@@ -158,7 +158,7 @@ impl ChartGraph {
         let config = ChartConfig {
             type_: "line".to_string(),
             data: ChartData {
-                labels: xs.iter().map(|s| s.format("%Y-%m").to_string()).collect(),
+                labels: xs.iter().map(|s| s.format("%Y-%m-%d").to_string()).collect(),
                 datasets,
             },
             options,

@@ -74,10 +74,12 @@ impl DataPoint {
     fn parse_time(s: &str) -> NaiveDate {
         if s.len() == 7 && s.contains("M") {
             NaiveDate::parse_from_str(&format!("{}D01", s), "%YM%mD%d")
+        } else if s.len() == 10 && s.contains("M") {
+            NaiveDate::parse_from_str(s, "%YM%mD%d")
         } else {
             NaiveDate::parse_from_str(&format!("{}M01D01", s), "%YM%mD%d")
         }
-        .expect("failed to understand date format")
+        .expect(&format!("failed to understand date format ({})", s))
     }
 
     fn to_timeseries(time_id: &str, data: Vec<DataPoint>) -> Vec<TimeSeries> {

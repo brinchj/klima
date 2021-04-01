@@ -5,7 +5,7 @@ use horrorshow::helper::doctype;
 use horrorshow::Template;
 
 use crate::table::TimeSeriesGroup;
-use chrono::NaiveDate;
+use chrono::{NaiveDate, Datelike, Weekday};
 use std::collections::BTreeMap;
 
 mod dst;
@@ -40,60 +40,35 @@ impl TableFetcher {
 }
 
 fn main() {
-    let month = chrono::Duration::days(31);
-    let year = chrono::Duration::days(366);
+    // let month = chrono::Duration::days(31);
+    // let year = chrono::Duration::days(366);
 
-    let electric_cars = TableFetcher::new("BIL51")
-        .select("DRIV", &["El"])
+    let alder_90 = TableFetcher::new("DODC1")
+        .select("KØN", &["I alt"])
+        .select("ALDER", &["90-94 år", "95-99 år", "100 år og derover"])
         .fetch()
-        .accumulative()
-        .sum("Ny-registrerede elbiler i alt")
-        .future_goal(
-            "Vej til Klimarådets 2030 mål på 1+ million elbiler",
-            NaiveDate::from_yo(2030, 1),
-            1_000_000,
-            month,
-        )
+        .right(&NaiveDate::from_ymd(2020, 9, 8))
+        .sum("90+ år")
+        .reduce(|d| d.weekday() == Weekday::Mon, |a, b| a + b)
         .plot(
-            "electric_cars",
-            "Alle nye elbiler siden 2011",
-            "måned",
-            "samlet antal indregistrerede elbiler",
+            "alder_90",
+            "Covid-relaterede dødsfald per uge for borgere over 90 år",
+            "uge",
+            "antal dødsfald",
         );
 
-    let oil_cars = TableFetcher::new("BIL51")
-        .select("DRIV", &["Benzin", "Diesel"])
+    let smit_90 = TableFetcher::new("SMIT2")
+        .select("AKTP", &["Bekræftede COVID-19 tilfælde pr. 100.000 personer"])
+        .select("ALDER1", &["90 år og derover", "80-89 år", "70-79 år", "60-69 år"])
         .fetch()
-        .sum("Ny-registrerede benzin og diesel biler per måned")
-        .future_goal(
-            "Vej til 2030 stop for benzin og diesel",
-            NaiveDate::from_yo(2030, 1),
-            0,
-            month,
-        )
+        .right(&NaiveDate::from_ymd(2020, 9, 8))
+        .reduce(|d| d.weekday() == Weekday::Mon, |a, b| b - a)
+        .norm("60-69 år")
         .plot(
-            "oil_cars",
-            "Nye Benzin og Diesel biler per måned",
-            "måned",
-            "nye biler per måned",
-        );
-
-    let co2 = "Drivhusgasser i alt, ekskl. CO2 fra afbrænding af biomasse";
-    let overpost = "Emissioner fra dansk territorium (UNFCCC/UNECE-opgørelsen) (4=(1)÷(2)÷(3))";
-
-    let emissions = TableFetcher::new("MRO2")
-        .select("OVERPOST", &[overpost])
-        .select("EMTYPE8", &[co2])
-        .fetch()
-        .sum("Udledninger fra dansk territorium (UNFCCC/UNECE), i alt, ekskl. CO2 fra afbrænding af biomasse")
-        .map(|v| v * 1_000)
-        .future_goal("Vej til 2030 mål", NaiveDate::from_yo(2030, 1), 21_000_000, year)
-        .future_goal("Vej til 2050 mål", NaiveDate::from_yo(2050, 1), 0, year)
-        .plot(
-            "emissions",
-            "Drivhusgasudledninger fra dansk territorium",
-            "år",
-            "COe ton",
+            "smit_90",
+            "Covid smittede per uge for borgere over 90 år",
+            "uge",
+            "antal registreret smittet",
         );
 
     let html = html! {
@@ -107,54 +82,18 @@ fn main() {
                 script(src = "https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-annotation/0.5.7/chartjs-plugin-annotation.min.js") {}
              }
              body {
-                div(class="container") {
+                  // div(class="row") {
+                  //   div(class="col col-lg-12") {
+                  //     : alder_90
+                  //   }
+                  // }
                   div(class="row") {
                     div(class="col col-lg-12") {
-                      blockquote(class="blockquote lead") {
-                        p(class="mb-0") {
-                          : "Kampen om at få elbiler på de danske veje handler først og sidst om Danmarks klimamål. At nå klimalovens 70-procentsmål i 2030 kræver en omstilling af vores transportsektor. Jo færre kilometer der køres med benzin- og dieselbiler, jo bedre er chancen for, at vi når vores klimamål."
-                        }
-                        footer(class="blockquote-footer text-right") {
-                          a(href="https://klimaraadet.dk/da/nyheder/uden-elbiler-naar-vi-ikke-klimamaalet", target="_blank") {
-                            : "Klimarådet, oktober 2020"
-                          }
-                        }
-                      }
-                    }
-                  }
-                  div(class="row") {
-                    div(class="col col-lg-12") {
-                      : electric_cars
-                    }
-                  }
-                  div(class="row") {
-                    div(class="col col-lg-12") {
-                      : oil_cars
-                    }
-                  }
-                  hr {}
-                  div(class="row") {
-                    div(class="col col-lg-12") {
-                      blockquote(class="blockquote lead") {
-                        p(class="mb-0") {
-                          : "70-procentsmålet skal sikre, at Danmark bliver et foregangsland på klimaområdet. Men selvom målet er krævende, peger tidligere beregninger fra Klimarådet på, at 70 pct. i 2030 og klimaneutralitet senest i 2050 ikke er mere ambitiøst end nødvendigt. Målet svarer nemlig nogenlunde til, hvad der skal til, hvis Danmark skal kunne siges at levere sit bidrag til at begrænse den globale temperaturstigning til 1,5 grader."
-                        }
-                        footer(class="blockquote-footer text-right") {
-                          a(href="https://klimaraadet.dk/da/rapporter/kendte-veje-og-nye-spor-til-70-procents-reduktion", target="_blank") {
-                            : "Klimarådet, marts 2020"
-                          }
-                        }
-                      }
-                    }
-                  }
-                  div(class="row") {
-                    div(class="col col-lg-12") {
-                      : emissions
+                      : smit_90
                     }
                   }
                 }
-             }
-            }
+              }
     };
 
     println!("{}", html.into_string().unwrap());
