@@ -121,7 +121,14 @@ impl Table {
         let id_selector: BTreeMap<String, Vec<&str>> = field_selector
             .into_iter()
             .map(|(k, v)| {
-                let metadata = self.metadata.variables.iter().find(|v| v.id == k).unwrap();
+                let metadata = self
+                    .metadata
+                    .variables
+                    .iter()
+                    .find(|v| v.id == k)
+                    .expect(&format!("could not find table key {}, options: {:?}", k, self
+                        .metadata
+                        .variables));
                 let ids: Vec<&str> = v
                     .into_iter()
                     .map(|text| {
@@ -167,7 +174,7 @@ impl Table {
             .dataset
             .value
             .iter()
-            .map(|v| v.unwrap_or(0))
+            .map(|v| v.unwrap_or(0.0) as i64)
             .collect();
 
         let time_id = self.metadata.variables.iter().find(|v| v.time).unwrap();

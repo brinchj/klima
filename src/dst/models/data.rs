@@ -116,7 +116,7 @@ pub struct Dataset {
     pub label: String,
     pub source: String,
     pub updated: String,
-    pub value: Vec<Option<i64>>,
+    pub value: Vec<Option<f64>>,
 }
 
 #[derive(Debug, Deserialize, Serialize)]

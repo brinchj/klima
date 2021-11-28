@@ -96,6 +96,22 @@ fn main() {
             "COe ton",
         );
 
+    let cattle = TableFetcher::new("ANI41")
+        .select("DYRKAT", &["Kvæg, i alt"])
+        .select("ENHED", &["Slagtninger og eksport af levende dyr (1.000 stk.)"])
+        .fetch()
+        .start_at(NaiveDate::from_ymd(2011, 1, 1))
+        .map(|v| v * 1_000)
+        .plot("Kvæg", "Antal slagtede dyr per måned", "år", "slagtede dyr");
+
+    let pigs = TableFetcher::new("ANI51")
+        .select("DYRKAT", &["Slagtesvin", "Eksport af levende svin i alt"])
+        .select("ENHED", &["Slagtninger og eksport af levende dyr (1.000 stk.)"])
+        .fetch()
+        .start_at(NaiveDate::from_ymd(2011, 1, 1))
+        .map(|v| v * 1_000)
+        .plot("Svin", "Antal slagtede dyr per måned", "år", "slagtede dyr");
+
     let html = html! {
           : doctype::HTML;
           html {
@@ -120,6 +136,16 @@ fn main() {
                           }
                         }
                       }
+                    }
+                  }
+                  div(class="row") {
+                    div(class="col col-lg-12") {
+                      : cattle
+                    }
+                  }
+                  div(class="row") {
+                    div(class="col col-lg-12") {
+                      : pigs
                     }
                   }
                   div(class="row") {

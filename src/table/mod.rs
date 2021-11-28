@@ -29,7 +29,7 @@ impl TimeSeriesGroup {
     pub fn map(self, f: fn(i64) -> i64) -> Self {
         TimeSeriesGroup {
             updated: self.updated,
-            series: self.series.into_iter().map(|ts| ts.map(f)).collect()
+            series: self.series.into_iter().map(|ts| ts.map(f)).collect(),
         }
     }
 
@@ -52,6 +52,17 @@ impl TimeSeriesGroup {
                 .into_iter()
                 .fold(TimeSeries::default(), std::ops::Add::add)
                 .with_tags(im::OrdSet::unit(title.to_string()))],
+        }
+    }
+
+    pub fn start_at(self, date: NaiveDate) -> Self {
+        TimeSeriesGroup {
+            updated: self.updated,
+            series: self
+                .series
+                .into_iter()
+                .map(|ts| ts.start_at(date))
+                .collect(),
         }
     }
 
@@ -142,7 +153,15 @@ impl TimeSeries {
     pub fn map(self, f: fn(i64) -> i64) -> Self {
         TimeSeries {
             tags: self.tags,
-            data: self.data.into_iter().map(|(k, v)| (k, f(v))).collect()
+            data: self.data.into_iter().map(|(k, v)| (k, f(v))).collect(),
+        }
+    }
+
+    pub fn start_at(self, date: NaiveDate) -> Self {
+        let (_, new_data) = self.data.split(&date.pred());
+        TimeSeries {
+            tags: self.tags,
+            data: new_data,
         }
     }
 }
