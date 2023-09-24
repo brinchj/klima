@@ -1,8 +1,6 @@
 mod models;
 
 use chrono::NaiveDate;
-use im;
-use reqwest;
 
 use crate::table::{TimeSeries, TimeSeriesGroup};
 use models::data::{DataRequest, DatasetContainer, Dimension, Dimensions, VariableRequest};
@@ -57,7 +55,7 @@ impl DataPoint {
         let d: Vec<(&str, Vec<&str>)> = dimensions
             .id
             .iter()
-            .filter(|id| !dimensions.role.metric.contains(&id))
+            .filter(|id| !dimensions.role.metric.contains(id))
             .map(|id| {
                 (
                     id.as_str(),
@@ -72,7 +70,7 @@ impl DataPoint {
     }
 
     fn parse_time(s: &str) -> NaiveDate {
-        if s.len() == 7 && s.contains("M") {
+        if s.len() == 7 && s.contains('M') {
             NaiveDate::parse_from_str(&format!("{}D01", s), "%YM%mD%d")
         } else {
             NaiveDate::parse_from_str(&format!("{}M01D01", s), "%YM%mD%d")
@@ -129,7 +127,7 @@ impl Table {
                             .values
                             .iter()
                             .find(|v| v.text == text)
-                            .expect(&format!("no such variable value: {}", text))
+                            .unwrap_or_else(|| panic!("no such variable value: {}", text))
                             .id
                             .as_str()
                     })

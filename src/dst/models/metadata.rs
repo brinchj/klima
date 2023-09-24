@@ -4,7 +4,7 @@ mod dst_date_format {
     use chrono::{DateTime, TimeZone, Utc};
     use serde::{self, Deserialize, Deserializer, Serializer};
 
-    const FORMAT: &'static str = "%Y-%m-%dT%H:%M:%S";
+    const FORMAT: &str = "%Y-%m-%dT%H:%M:%S";
 
     pub fn serialize<S: Serializer>(
         date: &DateTime<Utc>,

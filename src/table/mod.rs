@@ -1,7 +1,5 @@
 use crate::web;
-use chrono;
 use chrono::{DateTime, Datelike, NaiveDate, Utc};
-use im;
 use std::ops::Add;
 
 pub struct TimeSeriesGroup {
@@ -29,7 +27,7 @@ impl TimeSeriesGroup {
     pub fn map(self, f: fn(i64) -> i64) -> Self {
         TimeSeriesGroup {
             updated: self.updated,
-            series: self.series.into_iter().map(|ts| ts.map(f)).collect()
+            series: self.series.into_iter().map(|ts| ts.map(f)).collect(),
         }
     }
 
@@ -95,7 +93,7 @@ impl TimeSeriesGroup {
     }
 
     pub fn plot(self, id: &str, title: &str, x: &str, y: &str) -> impl horrorshow::RenderOnce {
-        let y = format!("{} — {}", y, self.updated.date().naive_local().to_string());
+        let y = format!("{} — {}", y, self.updated.naive_utc());
         web::ChartGraph::bar_plot_html(id.into(), title.into(), x.into(), y, self)
     }
 }
@@ -142,7 +140,7 @@ impl TimeSeries {
     pub fn map(self, f: fn(i64) -> i64) -> Self {
         TimeSeries {
             tags: self.tags,
-            data: self.data.into_iter().map(|(k, v)| (k, f(v))).collect()
+            data: self.data.into_iter().map(|(k, v)| (k, f(v))).collect(),
         }
     }
 }

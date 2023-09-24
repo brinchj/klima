@@ -50,7 +50,7 @@ fn main() {
         .sum("Ny-registrerede elbiler i alt")
         .future_goal(
             "Vej til Klimarådets 2030 mål på 1+ million elbiler",
-            NaiveDate::from_yo(2030, 1),
+            NaiveDate::from_yo_opt(2030, 1).unwrap(),
             1_000_000,
             month,
         )
@@ -67,7 +67,7 @@ fn main() {
         .sum("Ny-registrerede benzin og diesel biler per måned")
         .future_goal(
             "Vej til 2030 stop for benzin og diesel",
-            NaiveDate::from_yo(2030, 1),
+            NaiveDate::from_yo_opt(2030, 1).unwrap(),
             0,
             month,
         )
@@ -87,8 +87,8 @@ fn main() {
         .fetch()
         .sum("Udledninger fra dansk territorium (UNFCCC/UNECE), i alt, ekskl. CO2 fra afbrænding af biomasse")
         .map(|v| v * 1_000)
-        .future_goal("Vej til 2030 mål", NaiveDate::from_yo(2030, 1), 21_000_000, year)
-        .future_goal("Vej til 2050 mål", NaiveDate::from_yo(2050, 1), 0, year)
+        .future_goal("Vej til 2030 mål", NaiveDate::from_yo_opt(2030, 1).unwrap(), 21_000_000, year)
+        .future_goal("Vej til 2050 mål", NaiveDate::from_yo_opt(2050, 1).unwrap(), 0, year)
         .plot(
             "emissions",
             "Drivhusgasudledninger fra dansk territorium",
