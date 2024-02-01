@@ -43,11 +43,13 @@ fn main() {
     let month = chrono::Duration::days(31);
     let year = chrono::Duration::days(366);
 
-    let electric_cars = TableFetcher::new("BIL51")
+    let electric_cars = TableFetcher::new("BIL54")
         .select("DRIV", &["El"])
+        .select("OMRÅDE", &["Hele landet"])
+        .select("BRUG", &["I alt"])
+        .select("BILTYPE", &["Køretøjer i alt"])
         .fetch()
-        .accumulative()
-        .sum("Ny-registrerede elbiler i alt")
+        .sum("Elbiler på vejene i alt")
         .future_goal(
             "Vej til Klimarådets 2030 mål på 1+ million elbiler",
             NaiveDate::from_yo_opt(2030, 1).unwrap(),
@@ -56,7 +58,7 @@ fn main() {
         )
         .plot(
             "electric_cars",
-            "Alle nye elbiler siden 2011",
+            "Elbiler siden 2011",
             "måned",
             "samlet antal indregistrerede elbiler",
         );
