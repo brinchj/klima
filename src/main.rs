@@ -12,6 +12,11 @@ mod dst;
 mod table;
 mod web;
 
+const GREEN_CLEAN_RGB: (u8, u8, u8) = (0x84, 0xC3, 0x18);
+const BLACK_DIRTY_RGB: (u8, u8, u8) = (0x50, 0x3D, 0x42);
+const FUTURE_GOAL_RGB: (u8, u8, u8) = (0x92, 0xAD, 0x94);
+const FUTURE_GOAL_2_RGB: (u8, u8, u8) = (0x74, 0x8B, 0x75);
+
 struct TableFetcher {
     table: dst::Table,
     selector: BTreeMap<String, Vec<String>>,
@@ -49,12 +54,13 @@ fn main() {
         .select("BRUG", &["I alt"])
         .select("BILTYPE", &["Køretøjer i alt"])
         .fetch()
-        .sum("Elbiler på vejene i alt")
-        .future_goal(
+        .sum_with_line_color("Elbiler på vejene i alt", GREEN_CLEAN_RGB)
+        .future_goal_with_line_color(
             "Vej til Klimarådets 2030 mål på 1+ million elbiler",
             NaiveDate::from_yo_opt(2030, 1).unwrap(),
             1_000_000,
             month,
+            FUTURE_GOAL_RGB,
         )
         .plot(
             "electric_cars",
@@ -66,12 +72,13 @@ fn main() {
     let oil_cars = TableFetcher::new("BIL51")
         .select("DRIV", &["Benzin", "Diesel"])
         .fetch()
-        .sum("Ny-registrerede benzin og diesel biler per måned")
-        .future_goal(
+        .sum_with_line_color("Ny-registrerede benzin og diesel biler per måned", BLACK_DIRTY_RGB)
+        .future_goal_with_line_color(
             "Vej til 2030 stop for benzin og diesel",
             NaiveDate::from_yo_opt(2030, 1).unwrap(),
             0,
             month,
+            FUTURE_GOAL_RGB,
         )
         .plot(
             "oil_cars",
@@ -87,10 +94,10 @@ fn main() {
         .select("OVERPOST", &[overpost])
         .select("EMTYPE8", &[co2])
         .fetch()
-        .sum("Udledninger fra dansk territorium (UNFCCC/UNECE), i alt, ekskl. CO2 fra afbrænding af biomasse")
+        .sum_with_line_color("Udledninger fra dansk territorium (UNFCCC/UNECE), i alt, ekskl. CO2 fra afbrænding af biomasse", BLACK_DIRTY_RGB)
         .map(|v| v * 1_000)
-        .future_goal("Vej til 2030 mål", NaiveDate::from_yo_opt(2030, 1).unwrap(), 21_000_000, year)
-        .future_goal("Vej til 2050 mål", NaiveDate::from_yo_opt(2050, 1).unwrap(), 0, year)
+        .future_goal_with_line_color("Vej til 2030 mål", NaiveDate::from_yo_opt(2030, 1).unwrap(), 21_000_000, year, FUTURE_GOAL_RGB)
+        .future_goal_with_line_color("Vej til 2050 mål", NaiveDate::from_yo_opt(2050, 1).unwrap(), 0, year, FUTURE_GOAL_2_RGB)
         .plot(
             "emissions",
             "Drivhusgasudledninger fra dansk territorium",

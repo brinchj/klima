@@ -102,14 +102,18 @@ impl ChartGraph {
             .iter()
             .enumerate()
             .map(|(n, ts)| {
-                let color = colors.eval_rational(n, series.len());
+                let label = ts
+                    .tags
+                    .iter()
+                    .map(|d| d.as_str())
+                    .collect::<Vec<_>>()
+                    .join(",");
+                let color = ts
+                    .line_color_rgb
+                    .map(|(r, g, b)| colorous::Color { r, g, b })
+                    .unwrap_or_else(|| colors.eval_rational(n, series.len()));
                 ChartDataSet {
-                    label: ts
-                        .tags
-                        .iter()
-                        .map(|d| d.as_str())
-                        .collect::<Vec<_>>()
-                        .join(","),
+                    label,
                     background_color: format!("#{:x}", color),
                     border_color: format!("#{:x}", color),
                     data: xs.iter().map(|x| ts.data.get(x).cloned()).collect(),

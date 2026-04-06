@@ -43,13 +43,26 @@ impl TimeSeriesGroup {
     }
 
     pub fn sum(self, title: &str) -> Self {
+        self.sum_with_optional_line_color(title, None)
+    }
+
+    /// Same as [`sum`](Self::sum), but sets the line/bar color in the chart (otherwise the palette may pick a very dark first color).
+    pub fn sum_with_line_color(self, title: &str, rgb: (u8, u8, u8)) -> Self {
+        self.sum_with_optional_line_color(title, Some(rgb))
+    }
+
+    fn sum_with_optional_line_color(self, title: &str, line_color: Option<(u8, u8, u8)>) -> Self {
+        let mut summed = self
+            .series
+            .into_iter()
+            .fold(TimeSeries::default(), std::ops::Add::add)
+            .with_tags(im::OrdSet::unit(title.to_string()));
+        if let Some(rgb) = line_color {
+            summed = summed.with_line_color(rgb);
+        }
         TimeSeriesGroup {
             updated: self.updated,
-            series: vec![self
-                .series
-                .into_iter()
-                .fold(TimeSeries::default(), std::ops::Add::add)
-                .with_tags(im::OrdSet::unit(title.to_string()))],
+            series: vec![summed],
         }
     }
 
@@ -63,6 +76,29 @@ impl TimeSeriesGroup {
         date: NaiveDate,
         goal: i64,
         step: chrono::Duration,
+    ) -> Self {
+        self.future_goal_with_optional_line_color(title, date, goal, step, None)
+    }
+
+    /// Same as [`future_goal`](Self::future_goal), but sets the line colour for this projected series in the chart.
+    pub fn future_goal_with_line_color(
+        self,
+        title: &str,
+        date: NaiveDate,
+        goal: i64,
+        step: chrono::Duration,
+        rgb: (u8, u8, u8),
+    ) -> Self {
+        self.future_goal_with_optional_line_color(title, date, goal, step, Some(rgb))
+    }
+
+    fn future_goal_with_optional_line_color(
+        self,
+        title: &str,
+        date: NaiveDate,
+        goal: i64,
+        step: chrono::Duration,
+        line_color: Option<(u8, u8, u8)>,
     ) -> Self {
         let last_date = |ts: &TimeSeries| *ts.data.iter().last().unwrap().0;
         let final_date = self.series.iter().map(last_date).max().unwrap();
@@ -83,8 +119,12 @@ impl TimeSeriesGroup {
         }
 
         let tags = im::OrdSet::unit(title.to_string());
+        let mut goal_series = TimeSeries::new(tags, goal_data);
+        if let Some(rgb) = line_color {
+            goal_series = goal_series.with_line_color(rgb);
+        }
         let mut series = self.series;
-        series.push(TimeSeries::new(tags, goal_data));
+        series.push(goal_series);
 
         TimeSeriesGroup {
             updated: self.updated,
@@ -102,17 +142,24 @@ impl TimeSeriesGroup {
 pub struct TimeSeries {
     pub tags: im::OrdSet<String>,
     pub data: im::OrdMap<NaiveDate, i64>,
+    /// When set, the chart uses this RGB instead of the automatic palette.
+    pub line_color_rgb: Option<(u8, u8, u8)>,
 }
 
 impl TimeSeries {
     pub fn new(tags: im::OrdSet<String>, data: im::OrdMap<NaiveDate, i64>) -> TimeSeries {
-        TimeSeries { tags, data }
+        TimeSeries {
+            tags,
+            data,
+            line_color_rgb: None,
+        }
     }
 
     pub fn unit(tags: im::OrdSet<String>, date: NaiveDate, value: i64) -> TimeSeries {
         TimeSeries {
             tags,
             data: im::OrdMap::unit(date, value),
+            line_color_rgb: None,
         }
     }
 
@@ -120,6 +167,14 @@ impl TimeSeries {
         TimeSeries {
             tags,
             data: self.data,
+            line_color_rgb: self.line_color_rgb,
+        }
+    }
+
+    pub fn with_line_color(self, rgb: (u8, u8, u8)) -> Self {
+        TimeSeries {
+            line_color_rgb: Some(rgb),
+            ..self
         }
     }
 
@@ -134,6 +189,7 @@ impl TimeSeries {
         TimeSeries {
             tags: self.tags.clone(),
             data,
+            line_color_rgb: self.line_color_rgb,
         }
     }
 
@@ -141,6 +197,7 @@ impl TimeSeries {
         TimeSeries {
             tags: self.tags,
             data: self.data.into_iter().map(|(k, v)| (k, f(v))).collect(),
+            line_color_rgb: self.line_color_rgb,
         }
     }
 }
@@ -152,6 +209,7 @@ impl Add for TimeSeries {
         TimeSeries {
             tags: self.tags.union(rhs.tags),
             data: self.data.union_with(rhs.data, std::ops::Add::add),
+            line_color_rgb: self.line_color_rgb.or(rhs.line_color_rgb),
         }
     }
 }
